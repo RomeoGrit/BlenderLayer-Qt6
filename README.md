@@ -43,6 +43,11 @@ plus the following completions:
   `os.path.isfile`, raw strings for Windows paths (removes `SyntaxWarning: invalid escape sequence`).
 * **Blender client** – NumPy 2.0 compatibility (`np.array(..., copy=False)` removed in NumPy 2)
   and a guard for `bpy.ops.object.mode_set` with no active object.
+* **Blender 5.x pixel layout fix** – `GPUTexture.read()` now yields an `(h, w, 4)` array instead of a
+  flat buffer, so the old `.ravel(order='F').reshape(h, w, 4)` scrambled the frame: the image arrived
+  as gray, 4×4 repeated tiles. The buffer is now reshaped directly (works for both flat and shaped
+  layouts). Verified against Blender 5.2.3 (NumPy 2.3.4): output is byte-identical to the reference
+  at scale 1/2/4.
 
 ### Verification
 

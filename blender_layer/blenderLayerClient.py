@@ -755,11 +755,16 @@ class BlenderLayerClient():
                     h = self.regionHeight // scale
                     w = self.regionWidth // scale
                     if len(self.buf) == h and len(self.buf[0]) == w:
-                        b = np.asarray(self.buf, dtype=self.dtype).ravel(order = 'F')
+                        # Blender >= 5 (NumPy 2) returns the texture buffer as an
+                        # (h, w, 4) array, older versions return a flat buffer.
+                        # Reshaping directly preserves the row-major layout in both
+                        # cases.  (.ravel(order='F') assumed a flat buffer and
+                        # scrambled the image into gray 4x4 tiles on Blender 5.)
+                        b = np.asarray(self.buf, dtype=self.dtype).reshape(h, w, 4)
                         if self.bgrConversion:
-                            b = b.reshape(h, w, 4)[::-1,:,[2, 1, 0, 3]]
+                            b = b[::-1,:,[2, 1, 0, 3]]
                         else:
-                            b = b.reshape(h, w, 4)[::-1,:,[0, 1, 2, 3]]
+                            b = b[::-1,:,[0, 1, 2, 3]]
                         if scale != 1:
                             b = b.repeat(scale, axis=0).repeat(scale, axis=1)
                         b = b.ravel().tobytes()
